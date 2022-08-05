@@ -1,33 +1,33 @@
-upstream bipower-backend {
+upstream backend_upstream {
     server 192.168.3.80:8080 ;
 }
 server {
     listen 80;
-    server_name web.bipower;
-    access_log /var/log/nginx/web.bipower/access.log;
-    error_log /var/log/nginx/web.bipower/error.log error;
+    server_name domain.com;
+    access_log /var/log/nginx/domain.com/access.log;
+    error_log /var/log/nginx/domain.com/error.log error;
     location / {
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-Port $server_port;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_pass http://bipower-webapp.bipower.svc.cluster.local:80;
+        proxy_pass backend_upstream;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
     }
-   location /api {
-    proxy_pass http://bipower-backend/api;
-    proxy_redirect off;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection 'upgrade';
-    proxy_set_header Host $host;
-    proxy_cache_bypass $http_upgrade;
-    proxy_set_header   X-Forwarded-Proto $scheme;
+    location /api {
+        proxy_pass http://backend_upstream/api;
+        proxy_redirect off;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header   X-Forwarded-Proto $scheme;
 	
-   } 
+    } 
     location ~ ^/image/(.+\.(?:gif|jpe?g|png|pdf))$ {
-        alias /var/lib/docker/volumes/bipower-media/$1;
+        alias /var/lib/docker/volumes/domain.com/$1;
     }
 }
